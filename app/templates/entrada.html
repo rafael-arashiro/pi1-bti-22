@@ -2,6 +2,7 @@
 
 {% block content%}
 <p>Bem vindo, {{ nome }}.<p>
-<p><a href="cadastrar.html">Cadastrar</a></p>
-<p><a href="relatorios.html">Relatórios</a></p>
+<p><a href="{{ url_for('cadastrar') }}">Cadastrar</a></p>
+<p><a href="{{ url_for('apagar') }}">Apagar</a></p>
+<p><a href="{{ url_for('relatorio') }}">Relatórios</a></p>
 {% endblock%}

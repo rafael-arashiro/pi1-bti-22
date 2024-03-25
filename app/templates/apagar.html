@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content%}
+<p>Bem vindo, {{ nome }}.<p>
+<h2>Cadastrar</h2>
+<p>
+<form action="{{ url_for('apagarPessoa') }}" method="POST">
+    {{ apagar_pessoa.csrf_token }}
+    <div class="form-group">
+        <label>id do Nome</label>
+        {{ apagar_pessoa.id() }}
+        {% if apagar_pessoa.errors.id %}
+        {{ apagar_pessoa.errors.id }}
+        {% endif%}
+    </div>
+    <button type="submit">Apagar</button>
+</form>
+</p>
+<form action="{{ url_for('apagarTarefa') }}" method="POST">
+    {{ apagar_tarefa.csrf_token }}
+    <div class="form-group">
+        <label>id da Tarefa</label>
+        {{ apagar_tarefa.id() }}
+        {% if apagar_tarefa.errors.id %}
+        {{ apagar_tarefa.errors.id }}
+        {% endif%}
+    </div>
+    <button type="submit">Apagar</button>
+</form>
+</p>
+<p><a href="{{ url_for('entrada') }}">Voltar</a></p>
+{% endblock%}

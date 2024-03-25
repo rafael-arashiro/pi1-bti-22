@@ -1,6 +1,5 @@
 from flask import Flask
 import mysql.connector
-from flask_login import LoginManager
 
 mydb = mysql.connector.connect(
     host='localhost',

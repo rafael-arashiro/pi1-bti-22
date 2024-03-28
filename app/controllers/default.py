@@ -1,9 +1,9 @@
 from app import app
 from flask import render_template, flash, redirect, url_for, session
-from app import mydb
 from app.models.formulario import Login
 from app.models.cadastrar import Cadastrar_pessoa, Cadastrar_tarefa
 from app.models.apagar import Apagar_pessoa, Apagar_tarefa
+import mysql.connector
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -12,6 +12,7 @@ def index():
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    mydb = mysql.connector.connect(host='pi1bti22.mysql.pythonanywhere-services.com',user='pi1bti22',password='741258abc',database='pi1bti22$pi_db')
     formulario = Login()
     my_cursor = mydb.cursor()
 
@@ -25,7 +26,10 @@ def login():
             session['nome']=record[1]
             return redirect(url_for("entrada"))
     else:
-        flash("Nome invalido")
+        return redirect(url_for("index"))
+
+    mydb.close()
+
     return render_template("index.html", formulario=formulario)
 
 
@@ -38,17 +42,19 @@ def cadastrar():
     cadastro_pessoa = Cadastrar_pessoa()
     cadastro_tarefa = Cadastrar_tarefa()
 
+    mydb = mysql.connector.connect(host='pi1bti22.mysql.pythonanywhere-services.com',user='pi1bti22',password='741258abc',database='pi1bti22$pi_db')
+
     my_cursor = mydb.cursor()
     my_cursor.execute('SELECT * FROM pessoas')
 
     grupoPessoas = my_cursor.fetchall()
-    my_cursor.close()
 
     my_cursor_tarefas = mydb.cursor()
     my_cursor_tarefas.execute('SELECT * FROM tarefas')
 
     grupoTarefas = my_cursor_tarefas.fetchall()
-    my_cursor_tarefas.close()
+
+    mydb.close()
 
     return render_template("cadastrar.html", nome=session['nome'], cadastro_pessoa=cadastro_pessoa, cadastro_tarefa=cadastro_tarefa, grupoPessoas=grupoPessoas, grupoTarefas=grupoTarefas)
 
@@ -61,12 +67,16 @@ def cadastroPessoa():
     telefone = cadastro_pessoa.telefone.data
     admin = cadastro_pessoa.admin.data
 
+    mydb = mysql.connector.connect(host='pi1bti22.mysql.pythonanywhere-services.com',user='pi1bti22',password='741258abc',database='pi1bti22$pi_db')
+
     my_cursor = mydb.cursor()
 
     sql = f"INSERT INTO pessoas (Nome,Senha,Telefone,admin) VALUES ('{nome}','{password}',{telefone},{admin})"
 
     my_cursor.execute(sql)
     mydb.commit()
+
+    mydb.close()
 
     return cadastrar()
 
@@ -78,12 +88,16 @@ def cadastroTarefa():
     id_pessoa = cadastro_tarefa.id_pessoa.data
     data = cadastro_tarefa.data.data
 
+    mydb = mysql.connector.connect(host='pi1bti22.mysql.pythonanywhere-services.com',user='pi1bti22',password='741258abc',database='pi1bti22$pi_db')
+
     my_cursor = mydb.cursor()
 
     sql = f"INSERT INTO tarefas (tarefas,id_pessoa,data) VALUES ('{tarefa}','{id_pessoa}','{data}')"
 
     my_cursor.execute(sql)
     mydb.commit()
+
+    mydb.close()
 
     return cadastrar()
 
@@ -92,17 +106,19 @@ def apagar():
     apagar_pessoa = Apagar_pessoa()
     apagar_tarefa = Apagar_tarefa()
 
+    mydb = mysql.connector.connect(host='pi1bti22.mysql.pythonanywhere-services.com',user='pi1bti22',password='741258abc',database='pi1bti22$pi_db')
+
     my_cursor = mydb.cursor()
     my_cursor.execute('SELECT * FROM pessoas')
 
     grupoPessoas = my_cursor.fetchall()
-    my_cursor.close()
 
     my_cursor_tarefas = mydb.cursor()
     my_cursor_tarefas.execute('SELECT * FROM tarefas')
 
     grupoTarefas = my_cursor_tarefas.fetchall()
-    my_cursor_tarefas.close()
+    
+    mydb.close()
 
     return render_template("apagar.html", nome=session['nome'], apagar_pessoa=apagar_pessoa, apagar_tarefa=apagar_tarefa, grupoPessoas=grupoPessoas, grupoTarefas=grupoTarefas)
 
@@ -112,12 +128,16 @@ def apagarPessoa():
 
     id = apagar_pessoa.id.data
  
+    mydb = mysql.connector.connect(host='pi1bti22.mysql.pythonanywhere-services.com',user='pi1bti22',password='741258abc',database='pi1bti22$pi_db')
+
     my_cursor = mydb.cursor()
 
     sql = f"DELETE FROM pessoas WHERE id={id}"
 
     my_cursor.execute(sql)
     mydb.commit()
+
+    mydb.close()
 
     return apagar()
 
@@ -127,6 +147,8 @@ def apagarTarefa():
 
     id = apagar_tarefa.id.data
     
+    mydb = mysql.connector.connect(host='pi1bti22.mysql.pythonanywhere-services.com',user='pi1bti22',password='741258abc',database='pi1bti22$pi_db')
+
     my_cursor = mydb.cursor()
 
     sql = f"DELETE FROM tarefas WHERE id={id}"
@@ -134,22 +156,26 @@ def apagarTarefa():
     my_cursor.execute(sql)
     mydb.commit()
 
+    mydb.close()
+
     return apagar()
 
 @app.route("/relatorio", methods=["GET", "POST"])
 def relatorio():
 
+    mydb = mysql.connector.connect(host='pi1bti22.mysql.pythonanywhere-services.com',user='pi1bti22',password='741258abc',database='pi1bti22$pi_db')
+
     my_cursor = mydb.cursor()
     my_cursor.execute('SELECT * FROM pessoas')
 
     grupoPessoas = my_cursor.fetchall()
-    my_cursor.close()
 
     my_cursor_tarefas = mydb.cursor()
     my_cursor_tarefas.execute('SELECT * FROM tarefas WHERE data > CURDATE() AND data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)')
 
     grupoTarefas = my_cursor_tarefas.fetchall()
-    my_cursor_tarefas.close()
+
+    mydb.close()
 
     
     return render_template("relatorio.html", nome=session['nome'], grupoPessoas=grupoPessoas, grupoTarefas=grupoTarefas)

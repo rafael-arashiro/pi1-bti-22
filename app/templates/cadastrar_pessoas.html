@@ -2,7 +2,7 @@
 
 {% block content%}
 <p>Bem vindo, {{ nome }}.<p>
-<h2>Cadastrar</h2>
+<h2>Cadastro de Pessoas</h2>
 
 {% if grupoPessoas %}
 <p><table>
@@ -63,57 +63,17 @@
     <button type="submit">Cadastrar</button>
 </form>
 </p>
-
-{% if grupoTarefas %}
-<p><table>
-    <thead>
-        <tr>
-            <th>id</th>
-            <th>Tarefa</th>
-            <th>id pessoa</th>
-            <th>Data</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for tarefa in grupoTarefas %}
-        <tr>
-            <td>{{ tarefa[0] }}</td>
-            <td>{{ tarefa[1] }}</td>
-            <td>{{ tarefa[2] }}</td>
-            <td>{{ tarefa[3] }}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table></p>
-{% else %}
-<p>Não há tarefas.</p>
-{% endif %}
-
-<form action="{{ url_for('cadastroTarefa') }}" method="POST">
-    {{ cadastro_tarefa.csrf_token }}
+<p>
+<form action="{{ url_for('apagarPessoa') }}" method="POST">
+    {{ apagar_pessoa.csrf_token }}
     <div class="form-group">
-        <label>Tarefa</label>
-        {{ cadastro_tarefa.tarefa() }}
-        {% if cadastro_tarefa.errors.tarefa %}
-        {{ cadastro_tarefa.errors.tarefa }}
+        <label>id do Nome</label>
+        {{ apagar_pessoa.id() }}
+        {% if apagar_pessoa.errors.id %}
+        {{ apagar_pessoa.errors.id }}
         {% endif%}
     </div>
-    <div class="form-group">
-        <label>ID Pessoa</label>
-        {{ cadastro_tarefa.id_pessoa() }}
-        {% if cadastro_tarefa.errors.id_pessoa %}
-        {{ cadastro_tarefa.errors.id_pessoa }}
-        {% endif%}
-    </div>
-    <div class="form-group">
-        <label>Data</label>
-        {{ cadastro_tarefa.data() }}
-        {% if cadastro_tarefa.errors.data %}
-        {{ cadastro_tarefa.errors.data }}
-        {% endif%}
-    </div>
-
-    <button type="submit">Cadastrar</button>
+    <button type="submit">Apagar</button>
 </form>
 </p>
 <p><a href="{{ url_for('entrada') }}">Voltar</a></p>

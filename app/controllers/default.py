@@ -5,12 +5,7 @@ from app.models.cadastrar_pessoas import Cadastrar_pessoa, Apagar_pessoa
 from app.models.cadastrar_tarefas import Cadastrar_tarefa, Apagar_tarefa
 import mysql.connector
 
-mydb = mysql.connector.connect(
-    host='localhost',
-    user='root',
-    password='darkwhat16',
-    database='pi_db'
-)
+mydb = mysql.connector.connect(host='pi1bti22.mysql.pythonanywhere-services.com',user='pi1bti22',password='741258abc',database='pi1bti22$pi_db')
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -185,7 +180,7 @@ def relatorio():
     grupoPessoas = my_cursor.fetchall()
 
     my_cursor_tarefas = mydb.cursor()
-    my_cursor_tarefas.execute('SELECT tarefas.id, tarefas.tarefas, pessoas.Nome, tarefas.local, tarefas.data, tarefas.hora FROM tarefas INNER JOIN pessoas ON tarefas.id_pessoa=pessoas.id WHERE tarefa.data > CURDATE() AND tarefa.data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)')
+    my_cursor_tarefas.execute('SELECT tarefas.id, tarefas.tarefas, pessoas.Nome, tarefas.local, tarefas.data, tarefas.hora FROM tarefas INNER JOIN pessoas ON tarefas.id_pessoa=pessoas.id WHERE tarefas.data > CURDATE() AND tarefas.data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)')
 
     grupoTarefas = my_cursor_tarefas.fetchall()
 

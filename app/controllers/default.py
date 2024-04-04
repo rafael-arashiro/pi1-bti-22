@@ -28,6 +28,7 @@ def login():
         if record:
             session['loggedin']=True
             session['nome']=record[1]
+            session['admin']=record[4]
             return redirect(url_for("entrada"))
     else:
         return redirect(url_for("index"))
@@ -39,7 +40,7 @@ def login():
 
 @app.route("/entrada")
 def entrada():
-    return render_template("entrada.html", nome=session['nome'])
+    return render_template("entrada.html", nome=session['nome'], admin=session['admin'])
 
 @app.route("/cadastrar_pessoas")
 def cadastrar_pessoas():
@@ -172,6 +173,8 @@ def apagarTarefa():
 @app.route("/relatorio", methods=["GET", "POST"])
 def relatorio():
 
+    nome=session['nome']
+
     mydb = mysql.connector.connect(host='pi1bti22.mysql.pythonanywhere-services.com',user='pi1bti22',password='741258abc',database='pi1bti22$pi_db')
 
     my_cursor = mydb.cursor()
@@ -179,12 +182,18 @@ def relatorio():
 
     grupoPessoas = my_cursor.fetchall()
 
+    my_cursor_tarefas_admin = mydb.cursor()
+    my_cursor_tarefas_admin.execute('SELECT tarefas.id, tarefas.tarefas, pessoas.Nome, tarefas.local, tarefas.data, tarefas.hora, pesssoas.Telefone FROM tarefas INNER JOIN pessoas ON tarefas.id_pessoa=pessoas.id WHERE tarefas.data > CURDATE() AND tarefas.data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)')
+
+    grupoTarefasAdmin = my_cursor_tarefas_admin.fetchall()
+
     my_cursor_tarefas = mydb.cursor()
-    my_cursor_tarefas.execute('SELECT tarefas.id, tarefas.tarefas, pessoas.Nome, tarefas.local, tarefas.data, tarefas.hora FROM tarefas INNER JOIN pessoas ON tarefas.id_pessoa=pessoas.id WHERE tarefas.data > CURDATE() AND tarefas.data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)')
+    sql = f"SELECT tarefas.id, tarefas.tarefas, pessoas.Nome, tarefas.local, tarefas.data, tarefas.hora FROM tarefas INNER JOIN pessoas ON tarefas.id_pessoa=pessoas.id WHERE tarefas.id_pessoa=(SELECT id FROM pessoas WHERE Nome = '{nome}')"
+    my_cursor_tarefas.execute(sql)
 
     grupoTarefas = my_cursor_tarefas.fetchall()
 
     mydb.close()
 
     
-    return render_template("relatorio.html", nome=session['nome'], grupoPessoas=grupoPessoas, grupoTarefas=grupoTarefas)
+    return render_template("relatorio.html", nome=session['nome'], admin=session['admin'], grupoPessoas=grupoPessoas, grupoTarefasAdmin=grupoTarefasAdmin, grupoTarefas=grupoTarefas)

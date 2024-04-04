@@ -3,6 +3,7 @@
 {% block content%}
 <p>Bem vindo, {{ nome }}.<p>
 <h2>Relatórios</h2>
+{% if admin == True %}
 {% if grupoPessoas %}
 <p><table>
     <thead>
@@ -31,6 +32,39 @@
 {% endif %}
 
 <p>Tarefas das próximas 2 semanas</p>
+{% if grupoTarefasAdmin %}
+<p><table>
+    <thead>
+        <tr>
+            <th>id</th>
+            <th>Tarefa</th>
+            <th>Nome</th>
+            <th>Local</th>
+            <th>Data</th>
+            <th>Hora</th>
+            <th>Envio de mensagem</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tarefa in grupoTarefasAdmin %}
+        <tr>
+            <td>{{ tarefa[0] }}</td>
+            <td>{{ tarefa[1] }}</td>
+            <td>{{ tarefa[2] }}</td>
+            <td>{{ tarefa[3] }}</td>
+            <td>{{ tarefa[4] }}</td>
+            <td>{{ tarefa[5] }}</td>
+            <td><a href="https://wa.me//{{ tarefa[6] }}?text=Lembrete%{{ tarefa[4] }}%{{ tarefa[5] }}%{{ tarefa[1] }}%Local%{{ tarefa[3] }}">Enviar lembrete</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table></p>
+{% else %}
+<p>Não há tarefas.</p>
+{% endif %}
+
+{% else %}
+<p>Tarefas de {{ nome }}</p>
 {% if grupoTarefas %}
 <p><table>
     <thead>
@@ -56,8 +90,7 @@
         {% endfor %}
     </tbody>
 </table></p>
-{% else %}
-<p>Não há tarefas.</p>
+{% endif %}
 {% endif %}
 
 <p><a href="{{ url_for('entrada') }}">Voltar</a></p>

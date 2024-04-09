@@ -10,7 +10,6 @@
         <tr>
             <th>id</th>
             <th>Tarefa</th>
-            <th>Nome</th>
             <th>Local</th>
             <th>Data</th>
             <th>Hora</th>
@@ -24,7 +23,6 @@
             <td>{{ tarefa[2] }}</td>
             <td>{{ tarefa[3] }}</td>
             <td>{{ tarefa[4] }}</td>
-            <td>{{ tarefa[5] }}</td>
         </tr>
         {% endfor %}
     </tbody>
@@ -41,13 +39,6 @@
         {{ cadastro_tarefa.tarefa() }}
         {% if cadastro_tarefa.errors.tarefa %}
         {{ cadastro_tarefa.errors.tarefa }}
-        {% endif%}
-    </div>
-    <div class="form-group">
-        <label>Nome</label>
-        {{ cadastro_tarefa.id_pessoa() }}
-        {% if cadastro_tarefa.errors.id_pessoa %}
-        {{ cadastro_tarefa.errors.id_pessoa }}
         {% endif%}
     </div>
     <div class="form-group">
@@ -69,6 +60,27 @@
         {{ cadastro_tarefa.hora() }}
         {% if cadastro_tarefa.errors.hora %}
         {{ cadastro_tarefa.errors.hora }}
+        {% endif%}
+    </div>
+
+    <button type="submit">Cadastrar</button>
+</form>
+</p>
+<p>
+<form action="{{ url_for('pessoaTarefa') }}" method="POST">
+    {{ pessoas_tarefas.csrf_token }}
+    <div class="form-group">
+        <label>Nome</label>
+        {{ pessoas_tarefas.pessoa_id() }}
+        {% if pessoas_tarefas.errors.pessoa_id %}
+        {{ pessoas_tarefas.errors.pessoa_id }}
+        {% endif%}
+    </div>
+    <div class="form-group">
+        <label>Tarefa</label>
+        {{ pessoas_tarefas.tarefa_id() }}
+        {% if pessoas_tarefas.errors.tarefa_id %}
+        {{ pessoas_tarefas.errors.tarefa_id }}
         {% endif%}
     </div>
 

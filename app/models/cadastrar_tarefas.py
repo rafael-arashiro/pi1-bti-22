@@ -4,10 +4,13 @@ from wtforms.validators import DataRequired
 
 class Cadastrar_tarefa(FlaskForm):
     tarefa = StringField("tarefa", validators=[DataRequired()])
-    id_pessoa = SelectField("id_pessoa", validators=[DataRequired()])
     local = StringField("local")
     data = DateField("data", validators=[DataRequired()])
     hora = TimeField("hora")
+
+class Alocar_pessoa(FlaskForm):
+    pessoa_id = SelectField("pessoa_id", validators=[DataRequired()])
+    tarefa_id = SelectField("tarefa_id", validators=[DataRequired()])
 
 class Apagar_tarefa(FlaskForm):
     id = IntegerField("id", validators=[DataRequired()])

@@ -2,7 +2,7 @@ from app import app
 from flask import render_template, flash, redirect, url_for, session
 from app.models.formulario import Login
 from app.models.cadastrar_pessoas import Cadastrar_pessoa, Apagar_pessoa
-from app.models.cadastrar_tarefas import Cadastrar_tarefa, Apagar_tarefa
+from app.models.cadastrar_tarefas import Cadastrar_tarefa, Apagar_tarefa, Alocar_pessoa
 import mysql.connector
 
 mydb = mysql.connector.connect(host='pi1bti22.mysql.pythonanywhere-services.com',user='pi1bti22',password='741258abc',database='pi1bti22$pi_db')
@@ -91,6 +91,13 @@ def apagarPessoa():
 
     id = apagar_pessoa.id.data
 
+    my_cursor_associado = mydb.cursor()
+
+    sql = f"DELETE FROM pessoas_tarefas WHERE pessoa_id={id}"
+
+    my_cursor_associado.execute(sql)
+    mydb.commit()
+
     my_cursor = mydb.cursor()
 
     sql = f"DELETE FROM pessoas WHERE id={id}"
@@ -109,21 +116,29 @@ def cadastrar_tarefas():
 
     cadastro_tarefa = Cadastrar_tarefa()
 
+    pessoas_tarefas = Alocar_pessoa()
+    
     cursor = mydb.cursor()
     cursor.execute("SELECT Nome FROM pessoas")
     listadenomes = cursor.fetchall()
-    cadastro_tarefa.id_pessoa.choices = [(nomes, nomes) for nomes in listadenomes]
+    pessoas_tarefas.pessoa_id.choices = [(nomes, nomes) for nomes in listadenomes]
+
+    my_cursor_pessoas_tarefas_dois = mydb.cursor()
+    my_cursor_pessoas_tarefas_dois.execute("SELECT tarefas FROM tarefas")
+    listadetarefas = my_cursor_pessoas_tarefas_dois.fetchall()
+    pessoas_tarefas.tarefa_id.choices = [(tarefas, tarefas) for tarefas in listadetarefas]
+    
 
     apagar_tarefa = Apagar_tarefa()
 
     my_cursor_tarefas = mydb.cursor()
-    my_cursor_tarefas.execute('SELECT tarefas.id, tarefas.tarefas, pessoas.Nome, tarefas.local, tarefas.data, tarefas.hora FROM tarefas INNER JOIN pessoas ON tarefas.id_pessoa=pessoas.id')
+    my_cursor_tarefas.execute('SELECT tarefas.id, tarefas.tarefas, pessoas.Nome, tarefas.local, tarefas.data, tarefas.hora FROM tarefas, pessoas INNER JOIN pessoas_tarefas WHERE tarefas.id=pessoas_tarefas.tarefa_id AND pessoas.id=pessoas_tarefas.pessoa_id ORDER BY id')
 
     grupoTarefas = my_cursor_tarefas.fetchall()
 
     mydb.close()
 
-    return render_template("cadastrar_tarefas.html", nome=session['nome'], cadastro_tarefa=cadastro_tarefa, apagar_tarefa=apagar_tarefa, grupoTarefas=grupoTarefas)
+    return render_template("cadastrar_tarefas.html", nome=session['nome'], cadastro_tarefa=cadastro_tarefa, pessoas_tarefas=pessoas_tarefas, apagar_tarefa=apagar_tarefa, grupoTarefas=grupoTarefas)
 
 @app.route("/cadastroTarefa", methods=["GET", "POST"])
 def cadastroTarefa():
@@ -141,7 +156,30 @@ def cadastroTarefa():
 
     my_cursor = mydb.cursor()
 
-    sql = f"INSERT INTO tarefas (tarefas,id_pessoa,local,data,hora) VALUES ('{tarefa}',(SELECT id FROM pessoas WHERE Nome = '{nome}'),'{local}','{data}','{hora}')"
+    sql = f"INSERT INTO tarefas (tarefas,local,data,hora) VALUES ('{tarefa}','{local}','{data}','{hora}')"
+
+    my_cursor.execute(sql)
+    mydb.commit()
+
+    mydb.close()
+
+    return cadastrar_tarefas()
+
+@app.route("/pessoaTarefa", methods=["GET", "POST"])
+def pessoaTarefa():
+
+    mydb = mysql.connector.connect(host='pi1bti22.mysql.pythonanywhere-services.com',user='pi1bti22',password='741258abc',database='pi1bti22$pi_db')
+
+    pessoas_tarefas = Alocar_pessoa()
+
+    pessoa_id = pessoas_tarefas.pessoa_id.data
+    tarefa_id = pessoas_tarefas.tarefa_id.data
+    nome = pessoa_id[2:-3]
+    tarefa = tarefa_id[2:-3]
+
+    my_cursor = mydb.cursor()
+
+    sql = f"INSERT INTO pessoas_tarefas VALUES ((SELECT id FROM pessoas WHERE Nome = '{nome}'),(SELECT id FROM tarefas WHERE tarefas = '{tarefa}'))"
 
     my_cursor.execute(sql)
     mydb.commit()
@@ -158,6 +196,13 @@ def apagarTarefa():
     apagar_tarefa = Apagar_tarefa()
 
     id = apagar_tarefa.id.data
+
+    my_cursor_associado = mydb.cursor()
+
+    sql = f"DELETE FROM pessoas_tarefas WHERE tarefa_id={id}"
+
+    my_cursor_associado.execute(sql)
+    mydb.commit()
 
     my_cursor = mydb.cursor()
 
@@ -183,12 +228,12 @@ def relatorio():
     grupoPessoas = my_cursor.fetchall()
 
     my_cursor_tarefas_admin = mydb.cursor()
-    my_cursor_tarefas_admin.execute('SELECT tarefas.id, tarefas.tarefas, pessoas.Nome, tarefas.local, tarefas.data, tarefas.hora, pesssoas.Telefone FROM tarefas INNER JOIN pessoas ON tarefas.id_pessoa=pessoas.id WHERE tarefas.data > CURDATE() AND tarefas.data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)')
+    my_cursor_tarefas_admin.execute('SELECT tarefas.id, tarefas.tarefas, pessoas.Nome, tarefas.local, tarefas.data, tarefas.hora FROM tarefas, pessoas INNER JOIN pessoas_tarefas WHERE tarefas.id=pessoas_tarefas.tarefa_id AND pessoas.id=pessoas_tarefas.pessoa_id AND tarefas.data > CURDATE() AND tarefas.data < DATE_ADD(CURDATE(), INTERVAL 14 DAY)')
 
     grupoTarefasAdmin = my_cursor_tarefas_admin.fetchall()
 
     my_cursor_tarefas = mydb.cursor()
-    sql = f"SELECT tarefas.id, tarefas.tarefas, pessoas.Nome, tarefas.local, tarefas.data, tarefas.hora FROM tarefas INNER JOIN pessoas ON tarefas.id_pessoa=pessoas.id WHERE tarefas.id_pessoa=(SELECT id FROM pessoas WHERE Nome = '{nome}')"
+    sql = f"SELECT tarefas.id, tarefas.tarefas, pessoas.Nome, tarefas.local, tarefas.data, tarefas.hora FROM tarefas, pessoas INNER JOIN pessoas_tarefas WHERE tarefas.id=pessoas_tarefas.tarefa_id AND pessoas.id=pessoas_tarefas.pessoa_id AND pessoas.id=(SELECT id FROM pessoas WHERE Nome = '{nome}')"
     my_cursor_tarefas.execute(sql)
 
     grupoTarefas = my_cursor_tarefas.fetchall()
